@@ -1,3 +1,9 @@
+> **Vortex public research bundle**
+>
+> This repository is one part of the public Vortex DSE verification bundle.
+>
+> [Spec](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-spec) · [Proofs](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs) · [Merkle Agreement](https://github.com/vasilisnasopoulos-stack/vortex-merkle-agreement)
+
 # Vortex DSE — Formal Verification Index
 
 This repository is the reviewer-facing entry point for the public Vortex DSE formal artifacts. It separates **deductive proofs**, **bounded model checking**, and **executable reference behavior** so every claim can be traced to its verification method and scope.
