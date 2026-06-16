@@ -1,5 +1,13 @@
 # vortex-dse-cslot-proofs
 
+> **Vortex DSE formal specs** — [profile index](https://github.com/vasilisnasopoulos-stack) · navigation:
+>
+> | Repository | Role |
+> |---|---|
+> | **vortex-dse-cslot-proofs** ← *you are here* | TLAPS proofs — default (late-tolerant) admission |
+> | [vortex-dse-cslot-spec](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-spec) | Strict admission + Byzantine skew + JS reference impl |
+> | [vortex-merkle-agreement](https://github.com/vasilisnasopoulos-stack/vortex-merkle-agreement) | Per-slot Merkle agreement (Freeze → Reconcile → Commit) |
+
 Machine-checked **TLAPS** proofs for the Vortex DSE deterministic **C-slot
 admission** model.
 
