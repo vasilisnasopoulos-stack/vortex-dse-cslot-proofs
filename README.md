@@ -10,6 +10,10 @@
 
 # Vortex DSE — Formal Verification Index
 
+> **Slice:** this repo checks **default C-slot admission only** (`m.cslot ≤ current_slot`).
+> It does not prove agreement, loss recovery, cross-slot composition, or the full
+> protocol. See the [public slice map](https://github.com/vasilisnasopoulos-stack/blob/main/SLICES.md).
+
 This repository is the reviewer-facing entry point for the public Vortex DSE formal artifacts. It separates **deductive proofs**, **bounded model checking**, and **executable reference behavior** so every claim can be traced to its verification method and scope.
 
 ## Architecture at a glance
