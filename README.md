@@ -1,3 +1,7 @@
+> **Vortex DSE formal surface** · [Proofs (default + TLAPS)](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs) · [Strict spec + TLC](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-spec) · [Merkle agreement](https://github.com/vasilisnasopoulos-stack/vortex-merkle-agreement) · [Profile](https://github.com/vasilisnasopoulos-stack)
+>
+> Production C engine is **not** public. This repo is the **default late-tolerant model + TLAPS proofs**. Strict variant → spec repo.
+
 > **Vortex public research bundle**
 >
 > This repository is one part of the public Vortex DSE verification bundle.
