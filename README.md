@@ -14,7 +14,7 @@
 > C-slot model, `m.cslot ≤ current_slot`) only. It connects to
 > [merkle-agreement](https://github.com/vasilisnasopoulos-stack/vortex-merkle-agreement)
 > in the stack, but there is no composed proof linking them yet.
-> [How the parts connect →](https://github.com/vasilisnasopoulos-stack/blob/main/SLICES.md)
+> [How the parts connect →](https://github.com/vasilisnasopoulos-stack/vasilisnasopoulos-stack/blob/main/SLICES.md)
 
 This repository is the reviewer-facing entry point for the public Vortex DSE formal artifacts. It separates **deductive proofs**, **bounded model checking**, and **executable reference behavior** so every claim can be traced to its verification method and scope.
 
