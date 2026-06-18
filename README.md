@@ -43,7 +43,7 @@ The public work is currently modular: admission, crash/rejoin safety, and per-sl
 | Repository | Role | Verification status |
 |---|---|---|
 | **vortex-dse-cslot-proofs** ← you are here | Late-tolerant C-slot admission; deductive safety proofs | TLAPS: `[]TypeInvariant`, `[]NoFutureAdmission`; all 194 obligations proved |
-| [vortex-dse-cslot-spec](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-spec) | Strict C-slot admission, clock skew, Byzantine timestamp/origin spoofing, executable reference | TLC + Apalache bounded checks; JavaScript reference scenarios |
+| [vortex-dse-cslot-spec](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-spec) | Strict C-slot admission, clock skew, Byzantine timestamp/origin spoofing, executable reference | TLC bounded checks; JavaScript reference scenarios |
 | [vortex-merkle-agreement](https://github.com/vasilisnasopoulos-stack/vortex-merkle-agreement) | Per-slot input-set agreement: Freeze → Reconcile → Commit | TLC + Apalache bounded checks under declared assumptions |
 
 ## Claims matrix
@@ -52,7 +52,7 @@ The public work is currently modular: admission, crash/rejoin safety, and per-sl
 |---|---|---|---|
 | Type-correctness | Proved | TLAPS | Arbitrary nodes, message ids, and arbitrary finite `MaxSlot ∈ Nat` |
 | No future admission | Proved | TLAPS | Arbitrary nodes, message ids, and arbitrary finite `MaxSlot ∈ Nat` |
-| Strict same-slot admission | Checked | TLC + Apalache | Configured finite instances |
+| Strict same-slot admission | Checked | TLC | Configured finite instances (see spec repo) |
 | Exactly once per node | Checked | TLC | Configured finite instances |
 | Persistence does not invent processed ids | Checked | TLC | Configured finite instances |
 | Safety under bounded clock skew and Byzantine origin/timestamp spoofing | Checked | TLC | Configured finite adversarial instance |
