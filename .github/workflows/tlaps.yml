@@ -1,0 +1,30 @@
+name: TLAPS Proof Verification
+
+on:
+  push:
+    paths:
+      - 'specs/**.tla'
+  workflow_dispatch:
+
+jobs:
+  tlaps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TLAPS
+        run: |
+          wget -q https://github.com/tlaplus/tlapm/releases/download/202210041448/tlaps-1.5.0-x86_64-linux-gnu-inst.bin
+          chmod +x tlaps-1.5.0-x86_64-linux-gnu-inst.bin
+          ./tlaps-1.5.0-x86_64-linux-gnu-inst.bin -d $HOME/tlaps
+          echo "$HOME/tlaps/bin" >> $GITHUB_PATH
+
+      - name: Verify ExactlyOnce Proof
+        run: |
+          cd specs
+          tlapm --toolbox 0 0 Vortex_DSE_CSlot_ExactlyOnce_Proof.tla
+
+      - name: Verify TypeInvariant + NoFutureAdmission Proofs
+        run: |
+          cd specs
+          tlapm --toolbox 0 0 Vortex_DSE_CSlot_Proofs.tla
