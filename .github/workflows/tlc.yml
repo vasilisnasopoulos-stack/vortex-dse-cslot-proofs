@@ -1,0 +1,23 @@
+name: TLC Bounded Verification
+
+on:
+  push:
+    paths:
+      - 'specs/**.tla'
+      - 'specs/**.cfg'
+  workflow_dispatch:
+
+jobs:
+  tlc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download TLC
+        run: |
+          wget -q https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar
+
+      - name: Run TLC bounded check
+        run: |
+          cd specs
+          java -jar ../tla2tools.jar -config MC_Vortex_DSE_CSlot.cfg MC_Vortex_DSE_CSlot.tla
