@@ -4,6 +4,10 @@
 
 # Vortex DSE — Formal Verification Index
 
+[![TLAPS](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/tlaps.yml/badge.svg)](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/tlaps.yml)
+[![TLC](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/tlc.yml/badge.svg)](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/tlc.yml)
+[![Apalache](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/apalache.yml/badge.svg)](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/apalache.yml)
+
 This repository is the reviewer-facing entry point for the public Vortex DSE formal artifacts.
 It packages the **default late-tolerant admission model** and its TLAPS proofs.
 
