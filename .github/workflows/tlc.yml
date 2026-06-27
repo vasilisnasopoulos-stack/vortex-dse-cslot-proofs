@@ -2,9 +2,13 @@ name: TLC Bounded Verification
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'specs/**.tla'
-      - 'specs/**.cfg'
+      - 'specs/**/*.tla'
+      - 'specs/**/*.cfg'
+      - '.github/workflows/tlc.yml'
+      - 'README.md'
   workflow_dispatch:
 
 jobs:
