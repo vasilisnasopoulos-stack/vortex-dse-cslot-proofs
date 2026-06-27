@@ -21,4 +21,4 @@ jobs:
           docker run --rm \
             -v "$PWD/specs:/var/apalache" \
             ghcr.io/informalsystems/apalache:latest \
-            typecheck Vortex_DSE_CSlot.tla
+            typecheck --out-dir=/tmp/apalache-out Vortex_DSE_CSlot.tla
