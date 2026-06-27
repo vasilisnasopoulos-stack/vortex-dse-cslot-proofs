@@ -2,8 +2,12 @@ name: Apalache Type Check
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'specs/**.tla'
+      - 'specs/**/*.tla'
+      - '.github/workflows/apalache.yml'
+      - 'README.md'
   workflow_dispatch:
 
 jobs:
