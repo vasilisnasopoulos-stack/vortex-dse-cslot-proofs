@@ -1,0 +1,15 @@
+# TLAPS proof-manager cache (regenerated)
+.tlacache/
+**/.tlacache/
+
+# TLA+ tools — downloaded in CI (see .github/workflows/tlc.yml)
+tla2tools.jar
+*.jar
+
+# TLC / model-checking output
+states/
+*.toolbox/
+*.out
+
+# OS
+.DS_Store
