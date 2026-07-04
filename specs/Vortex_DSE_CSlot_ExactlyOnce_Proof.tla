@@ -95,12 +95,19 @@ LEMMA InitStrictExactlyOnce == Init => StrictExactlyOnceInv
 (* Case analysis over every action in Next.                                *)
 (***************************************************************************)
 
+\* NOTE: TypeInvariant is REQUIRED as a hypothesis here. The Process(n,m) case
+\* must conclude mm.id \in MsgIDs from mm \in network, which holds only because
+\* network \subseteq MsgRecord — a TypeInvariant conjunct. Earlier this lemma
+\* unfolded TypeInvariant via USE DEF but never ASSUMED it, so that fact was
+\* not in scope and the mm.id \in MsgIDs obligation failed silently (tlapm does
+\* not return a non-zero exit code on unproved obligations). TypeInvariant is
+\* discharged in the theorem below via the machine-checked TypeCorrect.
 LEMMA NextStrictExactlyOnce ==
-    StrictExactlyOnceInv /\ [Next]_vars => StrictExactlyOnceInv'
+    TypeInvariant /\ StrictExactlyOnceInv /\ [Next]_vars => StrictExactlyOnceInv'
   <1> USE MaxSlotType
         DEF StrictExactlyOnceInv, ExactlyOnceCore, PersistedClean,
             TypeInvariant, MsgRecord, vars
-  <1> SUFFICES ASSUME StrictExactlyOnceInv, [Next]_vars
+  <1> SUFFICES ASSUME TypeInvariant, StrictExactlyOnceInv, [Next]_vars
                PROVE  StrictExactlyOnceInv'
       OBVIOUS
 
@@ -236,12 +243,50 @@ LEMMA NextStrictExactlyOnce ==
 (*   ∴ Spec ⟹ []StrictExactlyOnce         (projection onto core conjunct)  *)
 (***************************************************************************)
 
+\* Type-preservation, needed so the Process case above has network \subseteq
+\* MsgRecord available at every reachable state. Same lemmas as the
+\* machine-checked TypeCorrect in Vortex_DSE_CSlot_Proofs.tla, reproduced here
+\* so this proof is self-contained.
+LEMMA InitType == Init => TypeInvariant
+  BY MaxSlotType DEF Init, TypeInvariant, MsgRecord
+
+LEMMA NextType == TypeInvariant /\ [Next]_vars => TypeInvariant'
+  <1> USE MaxSlotType DEF TypeInvariant, MsgRecord, vars
+  <1> SUFFICES ASSUME TypeInvariant, [Next]_vars
+               PROVE  TypeInvariant'
+      OBVIOUS
+  <1>1. CASE \E id \in MsgIDs : Submit(id)
+        BY <1>1 DEF Submit
+  <1>2. CASE \E n \in Nodes, m \in network : Process(n, m)
+        BY <1>2 DEF Process
+  <1>3. CASE \E n \in Nodes : Crash(n)
+        BY <1>3 DEF Crash
+  <1>4. CASE \E n \in Nodes : Rejoin(n)
+        BY <1>4 DEF Rejoin
+  <1>5. CASE \E id \in MsgIDs, k \in 0..MaxSlot : DuplicateInject(id, k)
+        BY <1>5 DEF DuplicateInject
+  <1>6. CASE Tick
+        BY <1>6 DEF Tick
+  <1>7. CASE UNCHANGED vars
+        BY <1>7
+  <1>8. QED
+        BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7 DEF Next
+
+\* We carry TypeInvariant /\ StrictExactlyOnceInv as ONE inductive invariant so
+\* the Process case always has network \subseteq MsgRecord in scope. Projecting
+\* onto the StrictExactlyOnce conjunct gives the exported safety theorem.
 THEOREM StrictExactlyOnceCorrect == Spec => []StrictExactlyOnce
-  <1>1. Init => StrictExactlyOnceInv
-        BY InitStrictExactlyOnce
-  <1>2. StrictExactlyOnceInv /\ [Next]_vars => StrictExactlyOnceInv'
-        BY NextStrictExactlyOnce
-  <1>3. StrictExactlyOnceInv => StrictExactlyOnce
+  <1>1. Init => (TypeInvariant /\ StrictExactlyOnceInv)
+        BY InitType, InitStrictExactlyOnce
+  <1>2. (TypeInvariant /\ StrictExactlyOnceInv) /\ [Next]_vars
+            => (TypeInvariant /\ StrictExactlyOnceInv)'
+        <2>1. TypeInvariant /\ [Next]_vars => TypeInvariant'
+              BY NextType
+        <2>2. TypeInvariant /\ StrictExactlyOnceInv /\ [Next]_vars
+                  => StrictExactlyOnceInv'
+              BY NextStrictExactlyOnce
+        <2> QED BY <2>1, <2>2
+  <1>3. (TypeInvariant /\ StrictExactlyOnceInv) => StrictExactlyOnce
         BY DEF StrictExactlyOnceInv, StrictExactlyOnce
   <1>4. QED
         BY <1>1, <1>2, <1>3, PTL DEF Spec
