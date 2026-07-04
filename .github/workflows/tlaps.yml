@@ -10,6 +10,10 @@ on:
       - 'README.md'
   workflow_dispatch:
 
+# NOTE: tlapm exits 0 even when proof obligations FAIL (it only prints
+# "[ERROR]: N/M obligations failed"). A bare `tlapm` step therefore reports
+# green with unproved obligations. Each step below captures output and fails
+# explicitly if any obligation failed.
 jobs:
   tlaps:
     runs-on: ubuntu-latest
@@ -26,9 +30,11 @@ jobs:
       - name: Verify ExactlyOnce Proof
         run: |
           cd specs
-          tlapm --toolbox 0 0 Vortex_DSE_CSlot_ExactlyOnce_Proof.tla
+          tlapm --toolbox 0 0 Vortex_DSE_CSlot_ExactlyOnce_Proof.tla 2>&1 | tee out.log
+          if grep -q "obligations failed" out.log; then echo "::error::unproved obligations"; exit 1; fi
 
       - name: Verify TypeInvariant + NoFutureAdmission Proofs
         run: |
           cd specs
-          tlapm --toolbox 0 0 Vortex_DSE_CSlot_Proofs.tla
+          tlapm --toolbox 0 0 Vortex_DSE_CSlot_Proofs.tla 2>&1 | tee out.log
+          if grep -q "obligations failed" out.log; then echo "::error::unproved obligations"; exit 1; fi
