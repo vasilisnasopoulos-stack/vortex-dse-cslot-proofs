@@ -4,6 +4,8 @@ name: tlapm exit-code reproducer
 # through its exit status, on both the current stable release and the rolling
 # pre-release. Never runs automatically.
 on:
+  push:
+    branches: [tlapm-exit-code-repro]
   workflow_dispatch:
 
 jobs:
