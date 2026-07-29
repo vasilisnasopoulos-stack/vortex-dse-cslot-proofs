@@ -69,3 +69,16 @@ jobs:
           echo "OBSERVED EXIT STATUS: $rc"
           echo "failed markers: $(grep -c '@!!status:failed' out.log || true)"
           echo "prose summary  : $(grep -E 'obligations? (failed|proved)' out.log || true)"
+
+      - name: Run reproducer WITH --strict (PR #278)
+        run: |
+          cd repro
+          set +e
+          tlapm --strict --toolbox 0 0 ExitCodeRepro.tla > strict.log 2>&1
+          rc=$?
+          set -e
+          echo "=============== tlapm --strict output ==============="
+          cat strict.log
+          echo "===================================================="
+          echo "OBSERVED EXIT STATUS WITH --strict: $rc"
+          echo "prose summary: $(grep -E 'obligations? (failed|proved)' strict.log || true)"
