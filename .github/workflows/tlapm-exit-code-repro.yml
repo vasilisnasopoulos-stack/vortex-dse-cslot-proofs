@@ -1,0 +1,69 @@
+name: tlapm exit-code reproducer
+
+# Experiment only. Determines whether tlapm signals failed proof obligations
+# through its exit status, on both the current stable release and the rolling
+# pre-release. Never runs automatically.
+on:
+  workflow_dispatch:
+
+jobs:
+  stable-1-5-0:
+    name: TLAPS 1.5.0 (latest stable release)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TLAPS 1.5.0
+        run: |
+          wget -q https://github.com/tlaplus/tlapm/releases/download/202210041448/tlaps-1.5.0-x86_64-linux-gnu-inst.bin
+          chmod +x tlaps-1.5.0-x86_64-linux-gnu-inst.bin
+          ./tlaps-1.5.0-x86_64-linux-gnu-inst.bin -d "$HOME/tlaps"
+          echo "$HOME/tlaps/bin" >> "$GITHUB_PATH"
+
+      - name: Run reproducer and capture exit status
+        run: |
+          cd repro
+          # No pipe: a pipeline would report tee's exit status, not tlapm's.
+          set +e
+          tlapm --toolbox 0 0 ExitCodeRepro.tla > out.log 2>&1
+          rc=$?
+          set -e
+          echo "=================== tlapm output ==================="
+          cat out.log
+          echo "===================================================="
+          echo "tlapm --version: $(tlapm --version 2>&1 | head -1)"
+          echo "OBSERVED EXIT STATUS: $rc"
+          echo "failed markers: $(grep -c '@!!status:failed' out.log || true)"
+          echo "prose summary  : $(grep -E 'obligations? (failed|proved)' out.log || true)"
+
+  rolling-1-6-0-pre:
+    name: TLAPS 1.6.0-pre (rolling pre-release)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TLAPS 1.6.0-pre
+        run: |
+          wget -q https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz
+          mkdir -p "$HOME/tlapm16"
+          tar xzf tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz -C "$HOME/tlapm16"
+          echo "--- extracted layout (top 2 levels) ---"
+          find "$HOME/tlapm16" -maxdepth 2 -type d | head -20
+          BIN=$(find "$HOME/tlapm16" -type f -name tlapm -perm -u+x | head -1)
+          echo "tlapm binary: $BIN"
+          echo "$(dirname "$BIN")" >> "$GITHUB_PATH"
+
+      - name: Run reproducer and capture exit status
+        run: |
+          cd repro
+          set +e
+          tlapm --toolbox 0 0 ExitCodeRepro.tla > out.log 2>&1
+          rc=$?
+          set -e
+          echo "=================== tlapm output ==================="
+          cat out.log
+          echo "===================================================="
+          echo "tlapm --version: $(tlapm --version 2>&1 | head -1)"
+          echo "OBSERVED EXIT STATUS: $rc"
+          echo "failed markers: $(grep -c '@!!status:failed' out.log || true)"
+          echo "prose summary  : $(grep -E 'obligations? (failed|proved)' out.log || true)"
