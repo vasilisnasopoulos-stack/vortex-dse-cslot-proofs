@@ -1,0 +1,71 @@
+name: CommunityModules — effect of --strict
+
+# Experiment only. Runs the TLAPS proof modules of tlaplus/CommunityModules
+# exactly as their own CI does (no --strict), and then again with --strict,
+# to see whether adding the flag would change the outcome of their build.
+# Nothing here modifies CommunityModules.
+on:
+  push:
+    branches: [tlapm-exit-code-repro]
+  workflow_dispatch:
+
+jobs:
+  compare:
+    name: CommunityModules proofs, with and without --strict
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Fetch CommunityModules
+        run: |
+          git clone --depth 1 https://github.com/tlaplus/CommunityModules.git cm
+          echo "--- proof modules present ---"
+          ls cm/modules/*_proofs.tla
+
+      - name: Install TLAPS 1.6.0-pre
+        run: |
+          curl -fsSL -o tlapm.tar.gz \
+            "https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz"
+          tar -xzf tlapm.tar.gz
+          echo "$PWD/tlapm/bin" >> "$GITHUB_PATH"
+
+      - name: Version
+        run: tlapm --version
+
+      - name: A) Their CI, verbatim (no --strict)
+        run: |
+          cd cm/modules
+          status=0
+          for proof in *_proofs.tla; do
+            echo "::group::$proof"
+            tlapm --cleanfp "$proof" > "../../$proof.plain.log" 2>&1 || status=1
+            rc_last=$?
+            echo "exit: $(tail -c0 /dev/null; echo $rc_last)"
+            grep -E 'obligations? (failed|proved)' "../../$proof.plain.log" || true
+            echo "::endgroup::"
+          done
+          echo "AGGREGATE STATUS (their CI would report): $status"
+
+      - name: B) Same modules WITH --strict
+        run: |
+          cd cm/modules
+          status=0
+          echo "| module | exit | summary |"
+          echo "|---|---|---|"
+          for proof in *_proofs.tla; do
+            set +e
+            tlapm --strict --cleanfp "$proof" > "../../$proof.strict.log" 2>&1
+            rc=$?
+            set -e
+            [ "$rc" -ne 0 ] && status=1
+            sum=$(grep -E 'obligations? (failed|proved)' "../../$proof.strict.log" | tail -1)
+            echo "| $proof | $rc | ${sum:-–} |"
+          done
+          echo "AGGREGATE STATUS WITH --strict: $status"
+          echo "(0 = adding --strict is safe for them; non-zero = it would surface something)"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: communitymodules-tlaps-logs
+          path: "*.log"
