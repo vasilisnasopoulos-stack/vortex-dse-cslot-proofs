@@ -1,0 +1,38 @@
+name: Inspect tlapm 1.6.0-pre tarball layout
+
+# Experiment only: determine the on-disk layout of the rolling pre-release
+# tarball, so download/installation docs can be written accurately.
+on:
+  push:
+    branches: [tlapm-exit-code-repro]
+  workflow_dispatch:
+
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and extract
+        run: |
+          curl -fsSL -o tlapm.tar.gz \
+            "https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz"
+          ls -lh tlapm.tar.gz
+          mkdir -p x && tar -xzf tlapm.tar.gz -C x
+
+      - name: Layout
+        run: |
+          echo "--- top level ---"
+          ls -la x
+          echo "--- directories, depth 3 ---"
+          find x -maxdepth 3 -type d | sort | head -40
+          echo "--- tlapm binary ---"
+          find x -type f -name 'tlapm' -perm -u+x
+          echo "--- TLAPS.tla (library path target) ---"
+          find x -name 'TLAPS.tla'
+          echo "--- examples dir? ---"
+          find x -maxdepth 4 -type d -name 'examples'
+          echo "--- total size ---"
+          du -sh x
+          echo "--- version + config ---"
+          BIN=$(find x -type f -name tlapm -perm -u+x | head -1)
+          "$BIN" --version
+          "$BIN" --config || true
