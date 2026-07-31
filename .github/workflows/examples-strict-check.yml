@@ -1,0 +1,100 @@
+name: tlaplus/Examples — effect of --strict
+
+# Experiment only. Runs the proof modules of tlaplus/Examples the way their own
+# CI does (no --strict), then again with --strict, to see whether adding the
+# flag would change the outcome of their build. Nothing here modifies Examples.
+on:
+  push:
+    branches: [examples-strict-check]
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Fetch Examples and CommunityModules
+        run: |
+          git clone --depth 1 https://github.com/tlaplus/Examples.git ex
+          mkdir -p deps/community
+          curl -fsSL -o deps/community/modules.jar \
+            https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
+
+      - name: Install TLAPS 1.6.0-pre
+        run: |
+          curl -fsSL -o tlapm.tar.gz \
+            "https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz"
+          tar -xzf tlapm.tar.gz
+          echo "$PWD/tlapm/bin" >> "$GITHUB_PATH"
+
+      - name: Version
+        run: tlapm --version
+
+      - name: Collect the proof modules their CI runs
+        working-directory: ex
+        run: |
+          # Same selection as tlaplus/Examples CI.yml: modules with a proof,
+          # excluding the one they exclude, limited to maxRuntimeMinutes <= 5.
+          find specifications -iname "manifest.json" -print0 \
+          | xargs --null --no-run-if-empty jq -r '
+              .modules
+              | map(select(has("proof")))
+              | map(select(.path != "specifications/LoopInvariance/SumSequence.tla"))
+              | map(select(.proof.maxRuntimeMinutes <= 5))
+              | .[] | "\(.proof.maxRuntimeMinutes)\t\(.path)"' \
+          | sort -n > ../targets.tsv
+          echo "modules selected: $(wc -l < ../targets.tsv)"
+          cat ../targets.tsv
+
+      - name: Run each module with and without --strict
+        working-directory: ex
+        run: |
+          COMMUNITY="$GITHUB_WORKSPACE/deps/community"
+          plain_status=0
+          strict_status=0
+          differ=""
+
+          echo "| module | plain | --strict | note |"
+          echo "|---|---|---|---|"
+
+          while IFS=$'\t' read -r mins path; do
+            [ -z "$path" ] && continue
+
+            set +e
+            timeout --signal=KILL "${mins}m" \
+              tlapm "$path" -I "$COMMUNITY" --stretch 5 > /tmp/plain.log 2>&1
+            rc_plain=$?
+            timeout --signal=KILL "${mins}m" \
+              tlapm --strict "$path" -I "$COMMUNITY" --stretch 5 > /tmp/strict.log 2>&1
+            rc_strict=$?
+            set -e
+
+            [ "$rc_plain" -ne 0 ] && plain_status=1
+            [ "$rc_strict" -ne 0 ] && strict_status=1
+
+            note=""
+            if [ "$rc_plain" -ne "$rc_strict" ]; then
+              note=$(grep -E 'obligations? (failed|proved)|missing proof|omitted' /tmp/strict.log | tail -1)
+              differ="${differ}\n  ${path}  plain=${rc_plain} strict=${rc_strict}  ${note}"
+            fi
+
+            echo "| $path | $rc_plain | $rc_strict | ${note:-–} |"
+          done < ../targets.tsv
+
+          echo
+          echo "AGGREGATE plain    : $plain_status"
+          echo "AGGREGATE --strict : $strict_status"
+          echo
+          if [ -n "$differ" ]; then
+            echo "MODULES WHERE --strict CHANGES THE OUTCOME:"
+            printf "%b\n" "$differ"
+          else
+            echo "NO MODULE CHANGES OUTCOME — adding --strict would be safe."
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: examples-strict-logs
+          path: targets.tsv
