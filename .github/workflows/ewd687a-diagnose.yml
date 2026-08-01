@@ -20,6 +20,9 @@ jobs:
           mkdir -p deps/community
           curl -fsSL -o deps/community/modules.jar \
             https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
+          # Their linux-setup.sh unzips the jar so the .tla sources land on the include path.
+          unzip -q deps/community/modules.jar -d deps/community
+          ls deps/community/*.tla | head
 
       - name: Install TLAPS 1.6.0-pre
         run: |
@@ -46,23 +49,17 @@ jobs:
           echo "===== output ====="
           cat /tmp/a.log
 
-      - name: Retry without the community include path
+      - name: Now with the jar unzipped — plain vs --strict
         working-directory: ex
         run: |
-          set +e
-          timeout --signal=KILL 5m \
-            tlapm specifications/ewd687a/EWD687a_proof.tla --stretch 5 > /tmp/b.log 2>&1
-          echo "EXIT (no -I): $?"
-          set -e
-          echo "===== output ====="
-          cat /tmp/b.log
-
-      - name: Retry from inside the module directory
-        working-directory: ex/specifications/ewd687a
-        run: |
-          set +e
-          timeout --signal=KILL 5m tlapm EWD687a_proof.tla --stretch 5 > /tmp/c.log 2>&1
-          echo "EXIT (cwd=module dir): $?"
-          set -e
-          echo "===== output ====="
-          cat /tmp/c.log
+          for mode in "" "--strict"; do
+            set +e
+            timeout --signal=KILL 5m \
+              tlapm $mode specifications/ewd687a/EWD687a_proof.tla \
+                -I "$GITHUB_WORKSPACE/deps/community" --stretch 5 > /tmp/r.log 2>&1
+            rc=$?
+            set -e
+            echo "mode='${mode:-plain}'  EXIT: $rc"
+            grep -E 'obligations? (failed|proved)|Error' /tmp/r.log | tail -3
+            echo
+          done
