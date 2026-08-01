@@ -1,0 +1,68 @@
+name: Diagnose EWD687a_proof exit 3
+
+# Narrow follow-up: capture the actual tlapm output for
+# specifications/ewd687a/EWD687a_proof.tla, which exited 3 in the earlier
+# comparison run, to answer whether it is environmental.
+on:
+  push:
+    branches: [examples-strict-check]
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Fetch Examples + CommunityModules
+        run: |
+          git clone --depth 1 https://github.com/tlaplus/Examples.git ex
+          cd ex && echo "Examples HEAD: $(git rev-parse --short HEAD)" && cd ..
+          mkdir -p deps/community
+          curl -fsSL -o deps/community/modules.jar \
+            https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
+
+      - name: Install TLAPS 1.6.0-pre
+        run: |
+          curl -fsSL -o tlapm.tar.gz \
+            "https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz"
+          tar -xzf tlapm.tar.gz
+          echo "$PWD/tlapm/bin" >> "$GITHUB_PATH"
+
+      - name: Environment
+        run: |
+          echo "runner: $ImageOS / $(uname -srm)"
+          tlapm --version
+          tlapm --config
+
+      - name: Run EWD687a_proof exactly as before
+        working-directory: ex
+        run: |
+          set +e
+          timeout --signal=KILL 3m \
+            tlapm specifications/ewd687a/EWD687a_proof.tla \
+              -I "$GITHUB_WORKSPACE/deps/community" --stretch 5 > /tmp/a.log 2>&1
+          echo "EXIT: $?"
+          set -e
+          echo "===== output ====="
+          cat /tmp/a.log
+
+      - name: Retry without the community include path
+        working-directory: ex
+        run: |
+          set +e
+          timeout --signal=KILL 5m \
+            tlapm specifications/ewd687a/EWD687a_proof.tla --stretch 5 > /tmp/b.log 2>&1
+          echo "EXIT (no -I): $?"
+          set -e
+          echo "===== output ====="
+          cat /tmp/b.log
+
+      - name: Retry from inside the module directory
+        working-directory: ex/specifications/ewd687a
+        run: |
+          set +e
+          timeout --signal=KILL 5m tlapm EWD687a_proof.tla --stretch 5 > /tmp/c.log 2>&1
+          echo "EXIT (cwd=module dir): $?"
+          set -e
+          echo "===== output ====="
+          cat /tmp/c.log
