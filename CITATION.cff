@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "Vortex DSE — C-slot admission proofs"
+message: Please cite this work using these metadata.
+type: software
+authors:
+  - given-names: Vasilis
+    family-names: Nasopoulos
+abstract: >-
+  TLAPS machine-checked deductive proofs of admission safety for the Vortex DSE consensus protocol: exactly-once admission, type correctness, and no-future admission.
+repository-code: "https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs"
+url: "https://vasilisnasopoulos-stack.github.io"
+license: Apache-2.0
+keywords:
+  - TLA+
+  - TLAPS
+  - formal methods
+  - distributed consensus
+  - model checking
