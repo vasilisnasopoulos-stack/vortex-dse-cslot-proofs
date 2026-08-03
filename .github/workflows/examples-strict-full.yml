@@ -1,0 +1,73 @@
+name: Examples — which modules --strict would break
+
+# Measures, against current tlaplus/Examples master, which proof modules
+# change outcome when --strict is added to the CI invocation. Read-only;
+# nothing in Examples is modified.
+on:
+  push:
+    branches: [examples-strict-check]
+  workflow_dispatch:
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Fetch Examples + CommunityModules
+        run: |
+          git clone --depth 1 https://github.com/tlaplus/Examples.git ex
+          echo "Examples HEAD: $(cd ex && git rev-parse --short HEAD)"
+          mkdir -p deps/community
+          curl -fsSL -o deps/community/modules.jar \
+            https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
+          # Their linux-setup.sh unzips the jar so the .tla sources are on the include path.
+          unzip -q -o deps/community/modules.jar -d deps/community
+          echo "community .tla files: $(ls deps/community/*.tla | wc -l)"
+
+      - name: Install TLAPS 1.6.0-pre
+        run: |
+          curl -fsSL -o tlapm.tar.gz \
+            "https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz"
+          tar -xzf tlapm.tar.gz
+          echo "$PWD/tlapm/bin" >> "$GITHUB_PATH"
+
+      - name: Version
+        run: tlapm --version
+
+      - name: Select the same modules their CI runs
+        working-directory: ex
+        run: |
+          find specifications -iname "manifest.json" -print0 \
+          | xargs --null --no-run-if-empty jq -r '
+              .modules[]
+              | select(has("proof"))
+              | select(.path != "specifications/LoopInvariance/SumSequence.tla")
+              | select(.proof.maxRuntimeMinutes <= 5)
+              | "\(.proof.maxRuntimeMinutes)\t\(.path)"' \
+          | sort -n > ../targets.tsv
+          echo "modules selected: $(wc -l < ../targets.tsv)"
+
+      - name: Run each with and without --strict
+        working-directory: ex
+        run: |
+          COMMUNITY="$GITHUB_WORKSPACE/deps/community"
+          echo "| module | plain | --strict | summary |"
+          echo "|---|---|---|---|"
+          differ=""
+          while IFS=$'\t' read -r mins path; do
+            [ -z "$path" ] && continue
+            set +e
+            timeout --signal=KILL "${mins}m" \
+              tlapm "$path" -I "$COMMUNITY" --stretch 5 > /tmp/p.log 2>&1
+            rc_p=$?
+            timeout --signal=KILL "${mins}m" \
+              tlapm --strict "$path" -I "$COMMUNITY" --stretch 5 > /tmp/s.log 2>&1
+            rc_s=$?
+            set -e
+            sum=$(grep -E 'obligations? (failed|proved)' /tmp/s.log | tail -1)
+            echo "| $path | $rc_p | $rc_s | ${sum:-–} |"
+            [ "$rc_p" != "$rc_s" ] && differ="${differ}\n  ${path}  plain=${rc_p} strict=${rc_s}"
+          done < ../targets.tsv
+          echo
+          echo "=== MODULES WHERE --strict CHANGES THE OUTCOME ==="
+          if [ -n "$differ" ]; then printf "%b\n" "$differ"; else echo "  none"; fi
