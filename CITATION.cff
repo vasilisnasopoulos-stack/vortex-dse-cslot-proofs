@@ -7,8 +7,8 @@ authors:
     family-names: Nasopoulos
 abstract: >-
   TLAPS machine-checked deductive proofs of admission safety for the Vortex DSE consensus protocol: exactly-once admission, type correctness, and no-future admission.
-repository-code: "https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs"
-url: "https://vasilisnasopoulos-stack.github.io"
+repository-code: "https://github.com/vasilisnasopoulos/vortex-dse-cslot-proofs"
+url: "https://vasilisnasopoulos.github.io"
 license: Apache-2.0
 keywords:
   - TLA+

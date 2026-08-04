@@ -1,12 +1,12 @@
 > **Vortex DSE public verification bundle**
 >
-> [Proofs](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs) · [Strict spec](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-spec) · [Merkle agreement](https://github.com/vasilisnasopoulos-stack/vortex-merkle-agreement)
+> [Proofs](https://github.com/vasilisnasopoulos/vortex-dse-cslot-proofs) · [Strict spec](https://github.com/vasilisnasopoulos/vortex-dse-cslot-spec) · [Merkle agreement](https://github.com/vasilisnasopoulos/vortex-merkle-agreement)
 
 # Vortex DSE — Formal Verification Index
 
-[![TLAPS](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/tlaps.yml/badge.svg?branch=main)](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/tlaps.yml?query=branch%3Amain)
-[![TLC](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/tlc.yml/badge.svg?branch=main)](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/tlc.yml?query=branch%3Amain)
-[![Apalache](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/apalache.yml/badge.svg?branch=main)](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-proofs/actions/workflows/apalache.yml?query=branch%3Amain)
+[![TLAPS](https://github.com/vasilisnasopoulos/vortex-dse-cslot-proofs/actions/workflows/tlaps.yml/badge.svg?branch=main)](https://github.com/vasilisnasopoulos/vortex-dse-cslot-proofs/actions/workflows/tlaps.yml?query=branch%3Amain)
+[![TLC](https://github.com/vasilisnasopoulos/vortex-dse-cslot-proofs/actions/workflows/tlc.yml/badge.svg?branch=main)](https://github.com/vasilisnasopoulos/vortex-dse-cslot-proofs/actions/workflows/tlc.yml?query=branch%3Amain)
+[![Apalache](https://github.com/vasilisnasopoulos/vortex-dse-cslot-proofs/actions/workflows/apalache.yml/badge.svg?branch=main)](https://github.com/vasilisnasopoulos/vortex-dse-cslot-proofs/actions/workflows/apalache.yml?query=branch%3Amain)
 
 This repository is the reviewer-facing entry point for the public Vortex DSE formal artifacts.
 It packages the **default late-tolerant admission model** and its TLAPS proofs.
@@ -21,8 +21,8 @@ This repo proves the core admission properties of the default model, while the o
 | Repository | Role | What it proves / checks |
 |---|---|---|
 | **vortex-dse-cslot-proofs** ← you are here | Late-tolerant C-slot admission; deductive safety proofs | TLAPS: `[]TypeInvariant`, `[]NoFutureAdmission`, `[]StrictExactlyOnce` |
-| [vortex-dse-cslot-spec](https://github.com/vasilisnasopoulos-stack/vortex-dse-cslot-spec) | Strict C-slot admission, clock skew, Byzantine timestamp/origin spoofing, executable reference | TLC bounded checks; JavaScript reference scenarios |
-| [vortex-merkle-agreement](https://github.com/vasilisnasopoulos-stack/vortex-merkle-agreement) | Per-slot input-set agreement: Freeze → Reconcile → Commit | TLC + Apalache bounded checks under declared assumptions |
+| [vortex-dse-cslot-spec](https://github.com/vasilisnasopoulos/vortex-dse-cslot-spec) | Strict C-slot admission, clock skew, Byzantine timestamp/origin spoofing, executable reference | TLC bounded checks; JavaScript reference scenarios |
+| [vortex-merkle-agreement](https://github.com/vasilisnasopoulos/vortex-merkle-agreement) | Per-slot input-set agreement: Freeze → Reconcile → Commit | TLC + Apalache bounded checks under declared assumptions |
 
 ## TL;DR
 
