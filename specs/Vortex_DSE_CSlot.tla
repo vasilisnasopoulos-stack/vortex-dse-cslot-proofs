@@ -2,7 +2,7 @@
 (***************************************************************************)
 (* Vortex DSE — Deterministic C-Slot Admission (V. Nasopoulos)             *)
 (*                                                                          *)
-(* C-slot law (replit.md L736-L810):                                        *)
+(* C-slot law:                                        *)
 (*   C_slot(TX) = floor( (T_hw - T_0) / Delta_t )                           *)
 (*                                                                          *)
 (* Admission rule (DEFAULT no-flag build — matches the running C code):     *)
